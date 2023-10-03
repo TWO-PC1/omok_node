@@ -4,17 +4,29 @@ const CODE = require('../modules/statusCode');
 const MSG = require('../modules/responseMessage');
 const Sign = {
     signinn: async (req, res) => {
-      const user = req.id; // 사용자 정보
+      console.log()
+      const user = req.body?.id; // 사용자 정보
+      const userpd = req.body?.pd;
+
+
+      if(user=='example'&&userpd=='example1'){
+console.log('success')
+      }else{
+console.log('error');
+console.log(req.body)
+
+        return res.status(CODE.UNAUTHORIZED).json(util.fail(CODE.Fail, MSG.Fail));
+      }
   
       try {
         // user의 idx, email을 통해 토큰을 생성
         const jwtToken = await jwt.sign(user);
         
         // 토큰을 클라이언트에게 응답으로 전송
-        return res.status(CODE.OK).json(util.success(CODE.OK, MSG.LOGIN_SUCCESS, {
+        return res.status(CODE.OK).json(util.success( MSG.LOGIN_SUCCESS, 
             
-          token: jwtToken.token
-        }));
+           jwtToken.token
+        ));
         
       } catch (error) {
         // 오류 처리

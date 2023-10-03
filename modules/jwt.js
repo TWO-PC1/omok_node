@@ -18,7 +18,7 @@ module.exports = {
             userId:user
         }
         
-        
+        console.log('sign',user)
         const result = {
             //sign메소드를 통해 access token 발급!
             token: jwt.sign(payload, secretKey, options),

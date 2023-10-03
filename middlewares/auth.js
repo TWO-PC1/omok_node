@@ -8,7 +8,7 @@ const TOKEN_INVALID = -2;
 const authUtil = {
     
     checkToken: async (req, res, next) => {
-        console.log('앙')
+        
         var token = req.headers.token;
          console.log(token)
         // 토큰 없음

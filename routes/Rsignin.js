@@ -6,7 +6,7 @@ const signin = require('../middlewares/signin').signinn;
 
 
 
-router.get('/',signin , (req, res)  => {
+router.post('/',signin , (req, res)  => {
 
     res.send('Hello, Express');
 
