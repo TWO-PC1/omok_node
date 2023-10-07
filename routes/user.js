@@ -13,9 +13,9 @@ router.post('/', authUtil, (req, res) => {
 
 
     
-    const successResponse = util.success( 'Success',1);
+    
 
-    res.status(CODE.OK).json(successResponse);
+    res.status(CODE.OK).json(util.success(CODE.UNAUTHORIZED,'축'));
 });
 
 module.exports = router;

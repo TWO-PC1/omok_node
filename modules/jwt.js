@@ -10,12 +10,13 @@ const TOKEN_INVALID = -2;
 
 
 module.exports = {
-    sign: async (user) => {
+    sign: async (user,authority) => {
         
         /* 현재는 idx와 email을 payload로 넣었지만 필요한 값을 넣으면 됨! */
         const payload ={
 
-            userId:user
+            userId:user.id,
+            authority:authority
         }
         
         console.log('sign',user)
@@ -28,6 +29,7 @@ module.exports = {
     },
     verify: async (token) => {
         let decoded;
+        
         console.log(token)
         try {
             // verify를 통해 값 decode!
@@ -41,7 +43,7 @@ module.exports = {
                 console.log(TOKEN_INVALID);
                 return TOKEN_INVALID;
             } else {
-                console.log("invalid token");
+                console.log("invalid token?");
                 return TOKEN_INVALID;
             }
         }

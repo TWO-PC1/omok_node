@@ -1,12 +1,12 @@
 const WebSocket = require('ws');
-const auth = require('./middlewares/auth(ws)').checkToken
-const matching = require('./middlewares/match').match
+const auth = require('./middlewares/auth').wscheckToken
+const matching = require('./modules/match').match
 const clients = new Map();
-const ipban = new Map();
+const ipban = require('./modules/ipban')
 
 module.exports = (server) =>{
 const wss = new WebSocket.Server({server});
-
+console.log('websocket 서버가 동작 중입니다.')
 
 
 
@@ -26,7 +26,7 @@ console.log('새로운 클라이언트 접속',ip)
 
     // }
 
- if(ipban.has(ip)){
+ if(!ipban.ipbancheck(ip)){
 console.log('ip밴',ip)
     ws.send('비정상적인 접근이 감지되었습니다!')
                     
@@ -42,7 +42,7 @@ console.log('ip밴',ip)
 
 
         if (clients.has(ws)) {
-            handleMessage(msg,ws)//메세지 처리
+            handleMessage(msg,ws,ip)//메세지 처리
             } else {
                 
                 const token = JSON.parse(msg).token
@@ -75,16 +75,19 @@ ws.send('ping');
 
 
     async function Auth(token,ws) {
-        console.log('auth 실행')
-        const user = await auth(token)
+        console.log('auth 실행');
+        
+        const user = await auth(token.token);
         if(user!=undefined){
-        clients.set(ws,user)
+
+        clients.set(ws,{main:user,num:generateUniqueNumber()})
         console.log('set 완료!')
         console.log(user)
+
     }else{
     
         ws.send('비정상적인 접근이 감지되었습니다!')
-        ipban.set(ip,'ban')
+        ipban.ipbanadd(ip,'30minute')
         ws.close()
     console.log('ban',ip)
     
@@ -92,6 +95,7 @@ ws.send('ping');
     }
     }
 
+  
 });
 
 
@@ -100,22 +104,49 @@ ws.send('ping');
 }
 
 
-const handleMessage=async(msg,ws)=>{
+const handleMessage=async(msg,ws,ip)=>{
 
     Data = JSON.parse(msg)
    
-switch(Data.headers){
+switch(Data?.headers){
 
 case 'matching':
-    const result = await matching({ // 수정: matching 모듈을 호출하는 방식 수정
-        id: Data.id,
+     matching({ // 수정: matching 모듈을 호출하는 방식 수정
+        id: clients.get(ws).main.id,
         elo: 1500,
-        ws: ws,
+        ws: clients.get(ws).num,
     });
-    ws.send(JSON.stringify(result));
+    ws.send('매칭시작!');
     break;
 
+    case 'send(moudule)':
+        if(clients.get(ws).main.authority=='administrator'){
+     if(findUserByNum(clients,Data.contents.ws)){
+        const { ws, client } = findUserByNum(clients,Data.contents.ws)
+        
+        ws.send(JSON.stringify(Data.contents.msg))
+        }else{
+            console.log(`유저를 찾을 수 없습니다: ${Data.contents.ws}`);
+        }
+        } else {
+        ipban.ipbanadd(ip,'30minute')
+        }
+}
 
 }
-}
 
+function generateUniqueNumber() {
+    let num;
+    do {
+      num = Math.floor(Math.random() * 1000); // 원하는 범위로 수정 가능
+    } while (Array.from(clients.values()).some((client) => client.num === num)); // 중복 검사
+    return num;
+  }
+  function findUserByNum(clients, targetNum) {
+    for (const [ws, client] of clients) {
+      if (client.num === targetNum) {
+        return { ws, client }; // 해당 num 값을 가진 유저 반환
+      }
+    }
+    return null; // 찾지 못한 경우 null 반환
+  }
