@@ -1,7 +1,7 @@
 const users = new Map();
 const WebSocket = require('ws');
 const jwt = require("../modules/jwt");
-
+const room = require("./room")
 
 const token ={token:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhZG1pbmlzdHJhdG9yIiwiYXV0aG9yaXR5IjoiYWRtaW5pc3RyYXRvciIsImlhdCI6MTY5NjY2OTQ3MCwiZXhwIjoxOTk2NjcxMjcwLCJpc3MiOiJ5c2oifQ.9qBGGcCe2Rw1yHxO3WWQndW6piA5RvKC45Hjl8-7Tic'}
 
@@ -11,7 +11,7 @@ const token ={token:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhZG1pbm
 // token = Wstoken
 // console.log('wwww',token)
 // })
-
+// room 만들고 id와 랜덤 비번을 보내는 형식으로 매칭 구현  데이터 교환은 room에서 
 
 
 const socket = new WebSocket('ws://localhost:3000', {
@@ -88,11 +88,19 @@ const matching = {
 
                             if (Math.abs(user1.elo - user2.elo) <= 110 + a) {
                                 console.log('match')
-
+                                Data={
+                                    name:'matching system room',
+                                    maxuser:'2',
+                                    user1:userWs,
+                                    user2:user2Ws
+                                }
+                                const roomData =room.matchingroom(Data)
+                                const roomid=roomData.roomid
+                              
                                 socket.send(JSON.stringify(DataFrame(user2Ws, {
                                     'type': 'success',
                                     'contents': '매칭 성공',
-                                    'Data': { 'who': user1 }
+                                    'Data': { 'who': user1}
                                 })));
                                 socket.send(JSON.stringify(DataFrame(userWs, {
                                     'type': 'success',

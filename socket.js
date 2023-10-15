@@ -2,8 +2,9 @@ const WebSocket = require('ws');
 const auth = require('./middlewares/auth').wscheckToken
 const matching = require('./modules/match').match
 const clients = new Map();
-const ipban = require('./modules/ipban')
-
+const ipban = require('./modules/ipban');
+const Mroom = require("./modules/room");
+const omok = require('./modules/omok');
 module.exports = (server) =>{
 const wss = new WebSocket.Server({server});
 console.log('websocket 서버가 동작 중입니다.')
@@ -125,13 +126,43 @@ case 'matching':
         const { ws, client } = findUserByNum(clients,Data.contents.ws)
         
         ws.send(JSON.stringify(Data.contents.msg))
+        break;
         }else{
             console.log(`유저를 찾을 수 없습니다: ${Data.contents.ws}`);
+            break;
         }
         } else {
         ipban.ipbanadd(ip,'30minute')
+        break;
         }
+        case 'omok(set)':
+            if(Mroom.informationroom(Data.roomid).system=='omok'){
+
+            xpos=Data.x
+            ypos=Data.y
+            omok.set(xpos,ypos,Data.user[0],Data.user[1])
+
+
+            }else{
+
+
+
+                ws.send('권한 미충족');
+            }
+
+            case 'omok(load)':
+                if(Mroom.informationroom(Data.roomid).system=='omok'){
+
+                   ws.send(omok.load())
+        
+                    }else{
+        
+        
+        
+                        ws.send('권한 미충족');
+                    }
 }
+ 
 
 }
 
