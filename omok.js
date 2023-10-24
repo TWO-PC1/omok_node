@@ -29,7 +29,7 @@ const game = {
                 if (board[x][y] == "") {
 
                     board[x][y] = dol
-                    think = [x, y]
+                    think = [turn, x, y]
                     turn = 3 - turn
                     return true;
                 } else {

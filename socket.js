@@ -49,7 +49,7 @@ module.exports = (server) => {
 
 
             }
-        }, 3000);
+        }, 300);
     });
 }
 
