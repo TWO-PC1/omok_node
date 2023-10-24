@@ -1,10 +1,61 @@
 const WebSocket = require('ws');
+/*
 const auth = require('./middlewares/auth').wscheckToken
 const matching = require('./modules/match').match
 const clients = new Map();
 const ipban = require('./modules/ipban');
 const Mroom = require("./modules/room");
+*/
 const omok = require('./modules/omok');
+const users = new Map()
+
+module.exports = (server) => {
+    const wss = new WebSocket.Server({ server });
+
+    wss.on('connection', (ws, req) => {
+
+        if (!users.has(ws)) {
+            console.log('잉')
+            users.set(ws)
+
+
+        }
+        if (users.size >= 2) {
+            omok.match()
+            for (const [ws, client] of users) {
+                ws.send('매칭')
+                ws.send(JSON.stringify([omok.turn()]))
+                console.log('감')
+            }
+
+        }
+        ws.on('message', (msg) => {
+
+            const posx = JSON.parse(msg).x
+            const posy = JSON.parse(msg).y
+            omok.set(posx, posy, ws)
+
+
+
+        });
+        ws.interval = setInterval(() => {
+
+            if (ws.readyState === ws.OPEN) {
+                var data = omok.load();
+
+                // 데이터를 순차적으로 처리
+
+                ws.send(JSON.stringify(data));
+
+
+            }
+        }, 3000);
+    });
+}
+
+
+
+/*
 module.exports = (server) =>{
 const wss = new WebSocket.Server({server});
 console.log('websocket 서버가 동작 중입니다.')
@@ -121,10 +172,12 @@ case 'matching':
     break;
 
     case 'send(moudule)':
+
+    console.log('다 와따')
         if(clients.get(ws).main.authority=='administrator'){
      if(findUserByNum(clients,Data.contents.ws)){
         const { ws, client } = findUserByNum(clients,Data.contents.ws)
-        
+        console.log(Data.contents.msg)
         ws.send(JSON.stringify(Data.contents.msg))
         break;
         }else{
@@ -158,7 +211,7 @@ case 'matching':
                     }else{
         
         
-        
+        console.log(Mroom.informationroom(Data.roomid))
                         ws.send('권한 미충족');
                     }
 }
@@ -181,3 +234,5 @@ function generateUniqueNumber() {
     }
     return null; // 찾지 못한 경우 null 반환
   }
+
+  */
